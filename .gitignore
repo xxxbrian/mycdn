@@ -1,0 +1,29 @@
+# Private workspace and local configuration
+.slim/
+/.ignore
+.env
+.env.*
+!.env.example
+/config.json
+/config.local.json
+/compose.override.yaml
+/compose.override.yml
+/certs/
+/secrets/
+data/
+
+# Dependencies and generated build output
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
+internal/admin/dist/*
+!internal/admin/dist/.keep
+bin/
+
+# Local verification output and caches
+*.test
+coverage.out
+.playwright-cli/
+output/
+__pycache__/
+.DS_Store
