@@ -1,0 +1,14 @@
+services:
+  mycdn:
+    build: .
+    image: mycdn:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
+    volumes:
+      - mycdn-data:/data
+    stop_grace_period: 30s
+
+volumes:
+  mycdn-data:
