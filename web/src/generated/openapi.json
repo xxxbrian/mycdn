@@ -1,0 +1,3872 @@
+{
+  "components": {
+    "schemas": {
+      "Action": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "type": "string"
+          },
+          "browser_ttl_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cache": {
+            "$ref": "#/components/schemas/CachePatch"
+          },
+          "cache_key": {
+            "$ref": "#/components/schemas/CacheKey"
+          },
+          "cookie": {
+            "$ref": "#/components/schemas/CookieMutation"
+          },
+          "cors": {
+            "$ref": "#/components/schemas/CORS"
+          },
+          "header": {
+            "$ref": "#/components/schemas/HeaderMutation"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/IdentityPatch"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/LimitsPatch"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "query": {
+            "$ref": "#/components/schemas/QueryMutation"
+          },
+          "redirect": {
+            "$ref": "#/components/schemas/Redirect"
+          },
+          "reply": {
+            "$ref": "#/components/schemas/Reply"
+          },
+          "type": {
+            "type": "string"
+          },
+          "upstream": {
+            "$ref": "#/components/schemas/UpstreamPatch"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "ActionCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "parameter": {
+            "type": "string"
+          },
+          "stages": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "parameter",
+          "stages"
+        ],
+        "type": "object"
+      },
+      "Analytics": {
+        "additionalProperties": false,
+        "properties": {
+          "asn_mmdb": {
+            "type": "string"
+          },
+          "batch_size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "country_mmdb": {
+            "type": "string"
+          },
+          "detail_days": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "flush_interval_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "memory_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "query_concurrency": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "query_timeout_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queue_size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rollup_days": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "temp_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "threads": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "detail_days",
+          "rollup_days",
+          "max_bytes",
+          "queue_size",
+          "batch_size",
+          "flush_interval_ms",
+          "query_concurrency",
+          "query_timeout_ms",
+          "memory_bytes",
+          "temp_bytes",
+          "threads"
+        ],
+        "type": "object"
+      },
+      "AnalyticsRuntime": {
+        "additionalProperties": false,
+        "properties": {
+          "dropped_events": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "geoip_available": {
+            "type": "boolean"
+          },
+          "lag_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queue_depth": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "queue_depth",
+          "dropped_events",
+          "lag_ms",
+          "geoip_available"
+        ],
+        "type": "object"
+      },
+      "Branch": {
+        "additionalProperties": false,
+        "properties": {
+          "condition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Condition"
+              },
+              {
+                "enum": [
+                  null
+                ],
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "condition",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "Breakdown": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_eligible_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cache_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_hits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cached_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "coalesced_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "error_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "peak_origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "peak_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "status_4xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status_5xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unique_ips": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "requests",
+          "unique_ips",
+          "request_errors",
+          "status_4xx",
+          "status_5xx",
+          "cache_hits",
+          "cache_eligible_requests",
+          "coalesced_requests",
+          "request_bytes",
+          "response_bytes",
+          "cached_bytes",
+          "origin_attempts",
+          "origin_errors",
+          "origin_request_bytes",
+          "origin_response_bytes",
+          "duration_sum_ms",
+          "origin_duration_sum_ms",
+          "requests_per_second",
+          "error_rate",
+          "cache_hit_rate",
+          "byte_hit_rate",
+          "response_bytes_per_second",
+          "origin_response_bytes_per_second",
+          "peak_response_bytes_per_second",
+          "peak_origin_response_bytes_per_second",
+          "latency",
+          "origin_latency",
+          "ttfb",
+          "origin_ttfb",
+          "ttfb_samples",
+          "origin_ttfb_samples"
+        ],
+        "type": "object"
+      },
+      "CORS": {
+        "additionalProperties": false,
+        "properties": {
+          "credentials": {
+            "type": "boolean"
+          },
+          "expose": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "max_age_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "methods": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "origins": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "origins",
+          "credentials"
+        ],
+        "type": "object"
+      },
+      "CacheKey": {
+        "additionalProperties": false,
+        "properties": {
+          "cookies": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "include_host": {
+            "type": "boolean"
+          },
+          "namespace": {
+            "type": "string"
+          },
+          "query_mode": {
+            "type": "string"
+          },
+          "query_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "include_host",
+          "query_mode"
+        ],
+        "type": "object"
+      },
+      "CachePatch": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "type": "string"
+          },
+          "prefetch": {
+            "type": "boolean"
+          },
+          "stale_if_error_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "stale_while_revalidate_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status_ttl": {
+            "items": {
+              "$ref": "#/components/schemas/StatusTTL"
+            },
+            "type": "array"
+          },
+          "ttl_seconds": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CachePolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "type": "string"
+          },
+          "prefetch": {
+            "type": "boolean"
+          },
+          "stale_if_error_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "stale_while_revalidate_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status_ttl": {
+            "items": {
+              "$ref": "#/components/schemas/StatusTTL"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "ttl_seconds": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "mode",
+          "ttl_seconds",
+          "stale_while_revalidate_seconds",
+          "stale_if_error_seconds",
+          "prefetch"
+        ],
+        "type": "object"
+      },
+      "Catalog": {
+        "additionalProperties": false,
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionCapability"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldCapability"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "schemas": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ParameterSchema"
+            },
+            "type": "object"
+          },
+          "stages": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "stages",
+          "fields",
+          "actions",
+          "schemas"
+        ],
+        "type": "object"
+      },
+      "ClientIPHeader": {
+        "additionalProperties": false,
+        "properties": {
+          "format": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "format"
+        ],
+        "type": "object"
+      },
+      "Condition": {
+        "additionalProperties": false,
+        "properties": {
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/Condition"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "field": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "CookieMutation": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "name"
+        ],
+        "type": "object"
+      },
+      "Coverage": {
+        "additionalProperties": false,
+        "properties": {
+          "base_bucket_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "data_from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "data_to": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "detail_from": {
+            "type": "string"
+          },
+          "disk_evicted_before": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dropped": {
+            "$ref": "#/components/schemas/DropCounts"
+          },
+          "geo_asn_available": {
+            "type": "boolean"
+          },
+          "geo_country_available": {
+            "type": "boolean"
+          },
+          "ingest_lag_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "interval_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "latency_approximate": {
+            "type": "boolean"
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "queued_events": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requested_from": {
+            "type": "string"
+          },
+          "requested_to": {
+            "type": "string"
+          },
+          "rollup_from": {
+            "type": "string"
+          },
+          "unique_ips_available": {
+            "type": "boolean"
+          },
+          "upstream_attributable": {
+            "type": "boolean"
+          },
+          "uses_rollups": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "requested_from",
+          "requested_to",
+          "detail_from",
+          "rollup_from",
+          "data_from",
+          "data_to",
+          "disk_evicted_before",
+          "uses_rollups",
+          "latency_approximate",
+          "unique_ips_available",
+          "partial",
+          "upstream_attributable",
+          "base_bucket_seconds",
+          "interval_seconds",
+          "dropped",
+          "queued_events",
+          "ingest_lag_ms",
+          "geo_country_available",
+          "geo_asn_available"
+        ],
+        "type": "object"
+      },
+      "Defaults": {
+        "additionalProperties": false,
+        "properties": {
+          "cache": {
+            "$ref": "#/components/schemas/CachePolicy"
+          },
+          "cache_key": {
+            "$ref": "#/components/schemas/CacheKey"
+          },
+          "delivery": {
+            "$ref": "#/components/schemas/DeliverySettings"
+          },
+          "identity": {
+            "$ref": "#/components/schemas/IdentitySettings"
+          },
+          "request": {
+            "$ref": "#/components/schemas/RequestSettings"
+          },
+          "upstream": {
+            "$ref": "#/components/schemas/UpstreamSettings"
+          }
+        },
+        "required": [
+          "cache",
+          "cache_key",
+          "upstream",
+          "identity",
+          "request",
+          "delivery"
+        ],
+        "type": "object"
+      },
+      "DeliverySettings": {
+        "additionalProperties": false,
+        "properties": {
+          "browser_ttl_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cors": {
+            "$ref": "#/components/schemas/CORS"
+          },
+          "headers": {
+            "items": {
+              "$ref": "#/components/schemas/HeaderMutation"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "DetailsQuery": {
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/Filters"
+          },
+          "from": {
+            "type": "string"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "offset": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "filters"
+        ],
+        "type": "object"
+      },
+      "DetailsResult": {
+        "additionalProperties": false,
+        "properties": {
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/RequestDetail"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "rows",
+          "has_more",
+          "next_offset",
+          "coverage"
+        ],
+        "type": "object"
+      },
+      "Document": {
+        "additionalProperties": false,
+        "properties": {
+          "analytics": {
+            "$ref": "#/components/schemas/Analytics"
+          },
+          "data_dir": {
+            "type": "string"
+          },
+          "defaults": {
+            "$ref": "#/components/schemas/Defaults"
+          },
+          "listen": {
+            "$ref": "#/components/schemas/Listen"
+          },
+          "rules": {
+            "items": {
+              "$ref": "#/components/schemas/Rule"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "schema_version": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sites": {
+            "items": {
+              "$ref": "#/components/schemas/Site"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "storage": {
+            "$ref": "#/components/schemas/Storage"
+          },
+          "trusted_proxies": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "listen",
+          "data_dir",
+          "trusted_proxies",
+          "sites",
+          "defaults",
+          "rules",
+          "storage",
+          "analytics"
+        ],
+        "type": "object"
+      },
+      "DropCounts": {
+        "additionalProperties": false,
+        "properties": {
+          "expired": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "invalid": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "queue": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "storage": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "queue",
+          "invalid",
+          "expired",
+          "storage"
+        ],
+        "type": "object"
+      },
+      "EntriesResult": {
+        "additionalProperties": false,
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryInfo"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entries",
+          "limit",
+          "truncated"
+        ],
+        "type": "object"
+      },
+      "EntryInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "accessed_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "fresh_until": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "host": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "site_id": {
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "stored_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "site_id",
+          "host",
+          "path",
+          "size",
+          "status",
+          "stored_at",
+          "accessed_at",
+          "fresh_until",
+          "complete"
+        ],
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "description": "Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message text",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value at the given location"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorModel": {
+        "additionalProperties": false,
+        "properties": {
+          "detail": {
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "examples": [
+              "Property foo is required but is missing."
+            ],
+            "type": "string"
+          },
+          "errors": {
+            "description": "Optional list of individual error details",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "instance": {
+            "description": "A URI reference that identifies the specific occurrence of the problem.",
+            "examples": [
+              "https://example.com/error-log/abc123"
+            ],
+            "format": "uri",
+            "type": "string"
+          },
+          "status": {
+            "description": "HTTP status code",
+            "examples": [
+              400
+            ],
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "description": "A short, human-readable summary of the problem type. This value should not change between occurrences of the error.",
+            "examples": [
+              "Bad Request"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "default": "about:blank",
+            "description": "A URI reference to human-readable documentation for the error.",
+            "examples": [
+              "https://example.com/errors/example"
+            ],
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ExplainInput": {
+        "additionalProperties": false,
+        "properties": {
+          "headers": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "type": "object"
+          },
+          "host": {
+            "type": "string"
+          },
+          "http_version": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "peer": {
+            "type": "string"
+          },
+          "response": {
+            "$ref": "#/components/schemas/SimulatedResponse"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "url",
+          "peer"
+        ],
+        "type": "object"
+      },
+      "ExplainResult": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "type": "string"
+          },
+          "cache_key": {
+            "type": "string"
+          },
+          "cache_policy": {
+            "$ref": "#/components/schemas/CachePolicy"
+          },
+          "client_ip": {
+            "type": "string"
+          },
+          "http_version": {
+            "type": "string"
+          },
+          "origin_id": {
+            "type": "string"
+          },
+          "origin_url": {
+            "type": "string"
+          },
+          "peer_ip": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "response_headers": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "type": "object"
+          },
+          "scheme": {
+            "type": "string"
+          },
+          "site_id": {
+            "type": "string"
+          },
+          "terminal_status": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "trace": {
+            "items": {
+              "$ref": "#/components/schemas/Trace"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "site_id",
+          "origin_id",
+          "origin_url",
+          "authority",
+          "protocol",
+          "cache_key",
+          "cache_policy",
+          "client_ip",
+          "peer_ip",
+          "http_version",
+          "scheme",
+          "trace"
+        ],
+        "type": "object"
+      },
+      "FieldCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "operators": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "stages": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "key",
+          "stages",
+          "operators"
+        ],
+        "type": "object"
+      },
+      "Filters": {
+        "additionalProperties": false,
+        "properties": {
+          "asns": {
+            "items": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "cache_results": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "client_ips": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "content_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "countries": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "hosts": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "methods": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "path_prefix": {
+            "type": "string"
+          },
+          "site_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "statuses": {
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "GatewayRuntime": {
+        "additionalProperties": false,
+        "properties": {
+          "active_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "active_upstreams": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_upstreams": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "started_at",
+          "active_requests",
+          "requests",
+          "active_upstreams",
+          "max_upstreams"
+        ],
+        "type": "object"
+      },
+      "Geography": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_eligible_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cache_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_hits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cached_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "coalesced_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "country": {
+            "type": "string"
+          },
+          "duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "error_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "peak_origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "peak_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "status_4xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status_5xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unique_ips": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "country",
+          "requests",
+          "unique_ips",
+          "request_errors",
+          "status_4xx",
+          "status_5xx",
+          "cache_hits",
+          "cache_eligible_requests",
+          "coalesced_requests",
+          "request_bytes",
+          "response_bytes",
+          "cached_bytes",
+          "origin_attempts",
+          "origin_errors",
+          "origin_request_bytes",
+          "origin_response_bytes",
+          "duration_sum_ms",
+          "origin_duration_sum_ms",
+          "requests_per_second",
+          "error_rate",
+          "cache_hit_rate",
+          "byte_hit_rate",
+          "response_bytes_per_second",
+          "origin_response_bytes_per_second",
+          "peak_response_bytes_per_second",
+          "peak_origin_response_bytes_per_second",
+          "latency",
+          "origin_latency",
+          "ttfb",
+          "origin_ttfb",
+          "ttfb_samples",
+          "origin_ttfb_samples"
+        ],
+        "type": "object"
+      },
+      "HeaderMutation": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "name"
+        ],
+        "type": "object"
+      },
+      "HealthResult": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "IdentityPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "client_ip_headers": {
+            "items": {
+              "$ref": "#/components/schemas/ClientIPHeader"
+            },
+            "type": "array"
+          },
+          "client_ip_source": {
+            "type": "string"
+          },
+          "scheme_source": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IdentitySettings": {
+        "additionalProperties": false,
+        "properties": {
+          "client_ip_headers": {
+            "items": {
+              "$ref": "#/components/schemas/ClientIPHeader"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "client_ip_source": {
+            "type": "string"
+          },
+          "scheme_source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "client_ip_source",
+          "scheme_source"
+        ],
+        "type": "object"
+      },
+      "LimitsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_upgrade": {
+            "type": "boolean"
+          },
+          "max_upload_bytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Listen": {
+        "additionalProperties": false,
+        "properties": {
+          "admin": {
+            "type": "string"
+          },
+          "proxy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "proxy",
+          "admin"
+        ],
+        "type": "object"
+      },
+      "Metrics": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_eligible_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cache_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_hits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cached_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "coalesced_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "error_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "peak_origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "peak_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "status_4xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status_5xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unique_ips": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "requests",
+          "unique_ips",
+          "request_errors",
+          "status_4xx",
+          "status_5xx",
+          "cache_hits",
+          "cache_eligible_requests",
+          "coalesced_requests",
+          "request_bytes",
+          "response_bytes",
+          "cached_bytes",
+          "origin_attempts",
+          "origin_errors",
+          "origin_request_bytes",
+          "origin_response_bytes",
+          "duration_sum_ms",
+          "origin_duration_sum_ms",
+          "requests_per_second",
+          "error_rate",
+          "cache_hit_rate",
+          "byte_hit_rate",
+          "response_bytes_per_second",
+          "origin_response_bytes_per_second",
+          "peak_response_bytes_per_second",
+          "peak_origin_response_bytes_per_second",
+          "latency",
+          "origin_latency",
+          "ttfb",
+          "origin_ttfb",
+          "ttfb_samples",
+          "origin_ttfb_samples"
+        ],
+        "type": "object"
+      },
+      "Origin": {
+        "additionalProperties": false,
+        "properties": {
+          "ca_file": {
+            "type": "string"
+          },
+          "dial_address": {
+            "type": "string"
+          },
+          "host_header": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "timeouts": {
+            "$ref": "#/components/schemas/TimeoutPatch"
+          },
+          "tls_server_name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
+        "type": "object"
+      },
+      "ParameterSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "enum": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "items": {
+            "$ref": "#/components/schemas/ParameterSchema"
+          },
+          "properties": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ParameterSchema"
+            },
+            "type": "object"
+          },
+          "required": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "Percentiles": {
+        "additionalProperties": false,
+        "properties": {
+          "p50_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "p95_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "p99_ms": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "p50_ms",
+          "p95_ms",
+          "p99_ms"
+        ],
+        "type": "object"
+      },
+      "Point": {
+        "additionalProperties": false,
+        "properties": {
+          "byte_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_eligible_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cache_hit_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "cache_hits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cached_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "coalesced_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "error_rate": {
+            "format": "double",
+            "type": "number"
+          },
+          "latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_attempts": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_duration_sum_ms": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_latency": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "origin_ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "origin_ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "peak_origin_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "peak_response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_errors": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "requests_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_bytes_per_second": {
+            "format": "double",
+            "type": "number"
+          },
+          "status_4xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status_5xx": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "time": {
+            "type": "string"
+          },
+          "ttfb": {
+            "$ref": "#/components/schemas/Percentiles"
+          },
+          "ttfb_samples": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unique_ips": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "time",
+          "requests",
+          "unique_ips",
+          "request_errors",
+          "status_4xx",
+          "status_5xx",
+          "cache_hits",
+          "cache_eligible_requests",
+          "coalesced_requests",
+          "request_bytes",
+          "response_bytes",
+          "cached_bytes",
+          "origin_attempts",
+          "origin_errors",
+          "origin_request_bytes",
+          "origin_response_bytes",
+          "duration_sum_ms",
+          "origin_duration_sum_ms",
+          "requests_per_second",
+          "error_rate",
+          "cache_hit_rate",
+          "byte_hit_rate",
+          "response_bytes_per_second",
+          "origin_response_bytes_per_second",
+          "peak_response_bytes_per_second",
+          "peak_origin_response_bytes_per_second",
+          "latency",
+          "origin_latency",
+          "ttfb",
+          "origin_ttfb",
+          "ttfb_samples",
+          "origin_ttfb_samples"
+        ],
+        "type": "object"
+      },
+      "PurgeResult": {
+        "additionalProperties": false,
+        "properties": {
+          "purged": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "purged"
+        ],
+        "type": "object"
+      },
+      "PurgeSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "all": {
+            "description": "Explicitly authorize an unfiltered purge. Filters, if given, still narrow the operation.",
+            "type": "boolean"
+          },
+          "host": {
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 8192,
+            "type": "string"
+          },
+          "path_prefix": {
+            "maxLength": 8192,
+            "type": "string"
+          },
+          "site_id": {
+            "maxLength": 256,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Query": {
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/Filters"
+          },
+          "from": {
+            "type": "string"
+          },
+          "group_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "interval_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "limit": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "filters"
+        ],
+        "type": "object"
+      },
+      "QueryMutation": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "name"
+        ],
+        "type": "object"
+      },
+      "Redirect": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "location"
+        ],
+        "type": "object"
+      },
+      "RefreshBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/RefreshResult"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "type": "object"
+      },
+      "RefreshResult": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "status"
+        ],
+        "type": "object"
+      },
+      "RefreshSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "site_id": {
+            "maxLength": 256,
+            "type": "string"
+          },
+          "urls": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "urls"
+        ],
+        "type": "object"
+      },
+      "Reply": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "content_type",
+          "body"
+        ],
+        "type": "object"
+      },
+      "RequestDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "asn": {
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "cache_result": {
+            "type": "string"
+          },
+          "cached_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "client_ip": {
+            "type": "string"
+          },
+          "completed_at": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "duration_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "error": {
+            "type": "string"
+          },
+          "first_byte_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "host": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "request_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "response_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "site_id": {
+            "type": "string"
+          },
+          "started_at": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "country",
+          "asn",
+          "request_id",
+          "site_id",
+          "host",
+          "client_ip",
+          "path",
+          "method",
+          "content_type",
+          "status",
+          "cache_result",
+          "started_at",
+          "completed_at",
+          "duration_ms",
+          "first_byte_ms",
+          "request_bytes",
+          "response_bytes",
+          "cached_bytes"
+        ],
+        "type": "object"
+      },
+      "RequestSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_upgrade": {
+            "type": "boolean"
+          },
+          "max_upload_bytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "max_upload_bytes",
+          "allow_upgrade"
+        ],
+        "type": "object"
+      },
+      "Result": {
+        "additionalProperties": false,
+        "properties": {
+          "breakdowns": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/Breakdown"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "type": "object"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "geo": {
+            "items": {
+              "$ref": "#/components/schemas/Geography"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Metrics"
+          }
+        },
+        "required": [
+          "summary",
+          "series",
+          "breakdowns",
+          "geo",
+          "coverage"
+        ],
+        "type": "object"
+      },
+      "Rule": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "enabled",
+          "stage",
+          "steps"
+        ],
+        "type": "object"
+      },
+      "RuntimeInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "cpu_percent": {
+            "format": "double",
+            "type": "number"
+          },
+          "cpus": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "go_bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "go_version": {
+            "type": "string"
+          },
+          "goroutines": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "heap_bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "time": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "uptime_seconds": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "time",
+          "go_version",
+          "cpus",
+          "goroutines",
+          "heap_bytes",
+          "go_bytes",
+          "cpu_percent",
+          "uptime_seconds"
+        ],
+        "type": "object"
+      },
+      "RuntimeStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "active_fills": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "active_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "admin_listen": {
+            "type": "string"
+          },
+          "analytics": {
+            "$ref": "#/components/schemas/AnalyticsRuntime"
+          },
+          "analytics_status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "cache": {
+            "$ref": "#/components/schemas/Stats"
+          },
+          "cpu_percent": {
+            "format": "double",
+            "type": "number"
+          },
+          "cpus": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "data_dir": {
+            "type": "string"
+          },
+          "gateway": {
+            "$ref": "#/components/schemas/GatewayRuntime"
+          },
+          "go_version": {
+            "type": "string"
+          },
+          "goroutines": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "heap_bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/RuntimeInfo"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "memory_bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "proxy_listen": {
+            "type": "string"
+          },
+          "restart_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "restart_required": {
+            "type": "boolean"
+          },
+          "started_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "uptime_seconds": {
+            "format": "double",
+            "type": "number"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "started_at",
+          "uptime_seconds",
+          "go_version",
+          "goroutines",
+          "memory_bytes",
+          "heap_bytes",
+          "cpu_percent",
+          "cpus",
+          "active_requests",
+          "active_fills",
+          "cache",
+          "gateway",
+          "analytics",
+          "history",
+          "restart_required",
+          "restart_fields",
+          "proxy_listen",
+          "admin_listen",
+          "data_dir"
+        ],
+        "type": "object"
+      },
+      "SimulatedResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "cache_result": {
+            "type": "string"
+          },
+          "headers": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "type": "object"
+          },
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "Site": {
+        "additionalProperties": false,
+        "properties": {
+          "default_origin": {
+            "type": "string"
+          },
+          "domains": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "origins": {
+            "items": {
+              "$ref": "#/components/schemas/Origin"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "enabled",
+          "domains",
+          "origins",
+          "default_origin"
+        ],
+        "type": "object"
+      },
+      "Stats": {
+        "additionalProperties": false,
+        "properties": {
+          "active_fills": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "bypasses": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "coalesced": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "entries": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "evictions": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "hits": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "misses": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "readers": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resident_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "storage_errors": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "entries",
+          "bytes",
+          "active_fills",
+          "readers",
+          "hits",
+          "misses",
+          "evictions",
+          "coalesced",
+          "bypasses",
+          "resident_bytes",
+          "storage_errors"
+        ],
+        "type": "object"
+      },
+      "Status": {
+        "additionalProperties": false,
+        "properties": {
+          "accepted": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "detail_from": {
+            "type": "string"
+          },
+          "disk_budget_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "disk_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "disk_evicted_before": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dropped": {
+            "$ref": "#/components/schemas/DropCounts"
+          },
+          "geo_asn_available": {
+            "type": "boolean"
+          },
+          "geo_country_available": {
+            "type": "boolean"
+          },
+          "geo_error": {
+            "type": "string"
+          },
+          "ingest_lag_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ingested": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "last_error": {
+            "type": "string"
+          },
+          "last_ingest_at": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "pending_events": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queue_capacity": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "queue_depth": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "rollup_from": {
+            "type": "string"
+          },
+          "since": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "storage_pressure": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "since",
+          "accepted",
+          "ingested",
+          "dropped",
+          "queue_depth",
+          "queue_capacity",
+          "pending_events",
+          "ingest_lag_ms",
+          "last_ingest_at",
+          "disk_bytes",
+          "disk_budget_bytes",
+          "storage_pressure",
+          "detail_from",
+          "rollup_from",
+          "disk_evicted_before",
+          "geo_country_available",
+          "geo_asn_available",
+          "closed"
+        ],
+        "type": "object"
+      },
+      "StatusTTL": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ttl_seconds": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "status",
+          "ttl_seconds"
+        ],
+        "type": "object"
+      },
+      "Step": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/Branch"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "type": "object"
+      },
+      "Storage": {
+        "additionalProperties": false,
+        "properties": {
+          "block_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "fill_timeout_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "inline_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_background": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_fills": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_object_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_readers": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "memory_bytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "max_bytes",
+          "memory_bytes",
+          "max_fills",
+          "max_background",
+          "max_object_bytes",
+          "inline_bytes",
+          "block_bytes",
+          "max_readers",
+          "fill_timeout_ms"
+        ],
+        "type": "object"
+      },
+      "TimeoutPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "connect_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "idle_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_header_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "tls_handshake_ms": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Timeouts": {
+        "additionalProperties": false,
+        "properties": {
+          "connect_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "idle_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "request_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_header_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "tls_handshake_ms": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "connect_ms",
+          "tls_handshake_ms",
+          "response_header_ms",
+          "idle_ms",
+          "request_ms"
+        ],
+        "type": "object"
+      },
+      "Trace": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string"
+          },
+          "before": {
+            "type": "string"
+          },
+          "branch_id": {
+            "type": "string"
+          },
+          "matched": {
+            "type": "boolean"
+          },
+          "rule_id": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "step_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "stage",
+          "rule_id",
+          "step_id"
+        ],
+        "type": "object"
+      },
+      "UpstreamPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "protocol": {
+            "type": "string"
+          },
+          "timeouts": {
+            "$ref": "#/components/schemas/TimeoutPatch"
+          }
+        },
+        "type": "object"
+      },
+      "UpstreamSettings": {
+        "additionalProperties": false,
+        "properties": {
+          "protocol": {
+            "type": "string"
+          },
+          "timeouts": {
+            "$ref": "#/components/schemas/Timeouts"
+          }
+        },
+        "required": [
+          "protocol",
+          "timeouts"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "mycdn",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/analytics/details": {
+      "post": {
+        "operationId": "query-request-details",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetailsQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailsResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "504": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gateway Timeout"
+          }
+        },
+        "summary": "Inspect a bounded page of retained request outcomes"
+      }
+    },
+    "/api/analytics/query": {
+      "post": {
+        "operationId": "query-analytics",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Query"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "504": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gateway Timeout"
+          }
+        },
+        "summary": "Query retained traffic with consistent filters across all sections"
+      }
+    },
+    "/api/cache/entries": {
+      "get": {
+        "operationId": "list-cache-entries",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "site_id",
+            "schema": {
+              "maxLength": 256,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "host",
+            "schema": {
+              "maxLength": 1024,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "path",
+            "schema": {
+              "maxLength": 8192,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "path_prefix",
+            "schema": {
+              "maxLength": 8192,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "format": "int64",
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntriesResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Inspect up to 500 cache entries with intersecting filters"
+      }
+    },
+    "/api/cache/purge": {
+      "post": {
+        "operationId": "purge-cache",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurgeResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Purge entries matching a nonempty selection, or explicitly all entries"
+      }
+    },
+    "/api/cache/refresh": {
+      "post": {
+        "description": "Validates the entire batch before acquisition. Results report each URL as refreshed, skipped, or error; HTTP 200 alone does not imply every URL was refreshed.",
+        "operationId": "refresh-cache",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshBatch"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Refresh concrete URLs through the gateway's content acquisition path"
+      }
+    },
+    "/api/capabilities": {
+      "get": {
+        "operationId": "get-capabilities",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get the rule compiler's field, action, and parameter catalog"
+      }
+    },
+    "/api/config": {
+      "get": {
+        "operationId": "get-config",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Read the saved configuration and its strong revision"
+      },
+      "put": {
+        "description": "Listeners, data directory, storage budgets, and analytics settings require a process restart. Other settings are published atomically for new requests.",
+        "operationId": "save-config",
+        "parameters": [
+          {
+            "description": "Exact ETag returned by GET /api/config.",
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "description": "Exact ETag returned by GET /api/config.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Document"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Precondition Failed"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Validate and atomically save the whole configuration"
+      }
+    },
+    "/api/explain": {
+      "post": {
+        "operationId": "explain",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExplainInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExplainResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Explain a request with the real saved-config executor, without fetching"
+      }
+    },
+    "/api/status": {
+      "get": {
+        "operationId": "get-status",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeStatus"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get observed process, cache, ingestion, and restart-required state"
+      }
+    },
+    "/healthz": {
+      "get": {
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Check that the management listener is serving requests"
+      }
+    }
+  }
+}
