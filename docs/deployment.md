@@ -42,12 +42,12 @@ run summary includes both the tag and an exact `ghcr.io/...@sha256:...` referenc
 Pin the digest when exact image bytes matter: tags can move, and rerunning a build
 for the same commit can pick up changed base images or system packages.
 
-GHCR package visibility is independent of repository visibility. A newly created
-package defaults to private; the workflow does not change visibility. For a private
-package, configure Dokploy's registry credentials using a GitHub account with
-package access and a classic personal access token with `read:packages`. An
-explicitly public package can be pulled anonymously. Do not commit registry tokens
-or place them in Docker build arguments.
+Check GHCR package visibility after the first publication rather than inferring
+pull access from repository visibility; the workflow does not set visibility. For a
+private package, configure Dokploy's registry credentials using a GitHub account
+with package access and a classic personal access token with `read:packages`. A
+public package can be pulled anonymously. Do not commit registry tokens or place
+them in Docker build arguments.
 
 ## Dokploy
 
