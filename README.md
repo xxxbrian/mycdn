@@ -24,6 +24,10 @@ behind an authenticated outer entry point. If the outer proxy also runs in a
 container, join it to the same private network and connect to `mycdn:8080`; then
 configure trusted proxy ranges and client-IP header sources for the actual network.
 
+GitHub Actions publishes tested Linux AMD64/ARM64 images to GHCR using
+`sha-<full-commit>` tags. Registry access, digest pinning and Dokploy configuration
+are described in [deployment](docs/deployment.md#github-actions-and-ghcr).
+
 ## Local development
 
 Requires Go 1.26+, a CGO/C++ toolchain, Node.js, and pnpm. DuckDB is linked into the

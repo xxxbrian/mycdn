@@ -12,9 +12,10 @@ WORKDIR /src
 COPY go.mod go.sum ./
 COPY . .
 COPY --from=web /src/web/dist/ ./internal/admin/dist/
+ARG VERSION=dev
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    CGO_ENABLED=1 go build -mod=readonly -trimpath -ldflags="-s -w" -o /mycdn ./cmd/mycdn
+    CGO_ENABLED=1 go build -mod=readonly -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /mycdn ./cmd/mycdn
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libstdc++6 \

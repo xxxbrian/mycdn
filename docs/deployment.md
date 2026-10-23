@@ -14,6 +14,60 @@ writable by UID 10001. Stop the instance before backing up the data directory.
 Only one process may own the directory. Multiple independent instances need
 separate volumes. No external database or queue is needed.
 
+## GitHub Actions and GHCR
+
+`.github/workflows/container.yml` runs frontend build/tests, Go tests, focused race
+tests and vet for pull requests to `main` and pushes to `main`. A push to `main`,
+or a manual run on `main`, also builds Linux AMD64 and ARM64 images on native
+runners. Pull requests and manual runs on other branches cannot publish images.
+
+Each platform image is uploaded by digest, then checked for its embedded version,
+frontend, real proxy/cache/analytics behavior and restart with the same data volume.
+Only after both platforms pass does the workflow publish a multi-platform tag:
+
+```text
+ghcr.io/<owner>/<repository>:sha-<full-commit>
+```
+
+The repository path is lowercased. The workflow uses its built-in `GITHUB_TOKEN`
+with `packages: write` in publishing jobs; no stored personal token is needed for
+publishing. OCI source/revision labels associate the image with its source. The
+binary's `-version` output and management status report the same `sha-<full-commit>`
+build identifier. Local Docker builds default to `dev`; override with
+`docker build --build-arg VERSION=<identifier> .`.
+
+There are no `latest`, `stable`, semantic-version aliases or Git tag/release
+triggers. Publishing an image does not trigger a Dokploy deployment. The Actions
+run summary includes both the tag and an exact `ghcr.io/...@sha256:...` reference.
+Pin the digest when exact image bytes matter: tags can move, and rerunning a build
+for the same commit can pick up changed base images or system packages.
+
+GHCR package visibility is independent of repository visibility. A newly created
+package defaults to private; the workflow does not change visibility. For a private
+package, configure Dokploy's registry credentials using a GitHub account with
+package access and a classic personal access token with `read:packages`. An
+explicitly public package can be pulled anonymously. Do not commit registry tokens
+or place them in Docker build arguments.
+
+## Dokploy
+
+Use an Application with Docker/GHCR as its source and select a published tag or
+digest; no server-side source build is needed. Mount a persistent volume at `/data`.
+The existing `compose.yaml` is a local-build example, not a registry-only Dokploy
+configuration.
+
+Route business domains through Dokploy's Traefik to container port `8080`, preserving
+the original Host. Add the same domains to sites in mycdn. Route a separately
+authenticated management entry point to port `8081`, or keep it private: the console
+has no login system. Direct public host-port bindings are unnecessary. Configure
+trusted proxy networks and client-IP headers for the actual ingress network.
+
+Run one replica, use stop-first updates and allow at least 30 seconds for graceful
+shutdown. Never overlap old and new containers against the same `/data`, including
+during rollback. Updates can therefore cause a brief interruption. Pinning an older
+image does not restore data; stop the service and back up the complete data directory
+before changes requiring a recoverable data snapshot.
+
 ## Outer reverse proxy
 
 Public Nginx/Caddy handles certificates and public H1/H2/H3. It forwards to the
