@@ -23,11 +23,17 @@ runners. Pull requests and manual runs on other branches cannot publish images.
 
 Each platform image is uploaded by digest, then checked for its embedded version,
 frontend, real proxy/cache/analytics behavior and restart with the same data volume.
-Only after both platforms pass does the workflow publish a multi-platform tag:
+Only after both platforms pass does the workflow publish multi-platform tags:
 
 ```text
+ghcr.io/<owner>/<repository>:main
 ghcr.io/<owner>/<repository>:sha-<full-commit>
 ```
+
+The branch tag moves to a successful build only while its commit is still the
+current branch head. Failed checks leave it unchanged; outdated runs still publish
+their commit tag but cannot move the branch tag backward. Automatic publishing is
+enabled only for `main`.
 
 The repository path is lowercased. The workflow uses its built-in `GITHUB_TOKEN`
 with `packages: write` in publishing jobs; no stored personal token is needed for
@@ -38,9 +44,9 @@ build identifier. Local Docker builds default to `dev`; override with
 
 There are no `latest`, `stable`, semantic-version aliases or Git tag/release
 triggers. Publishing an image does not trigger a Dokploy deployment. The Actions
-run summary includes both the tag and an exact `ghcr.io/...@sha256:...` reference.
-Pin the digest when exact image bytes matter: tags can move, and rerunning a build
-for the same commit can pick up changed base images or system packages.
+run summary includes the published tags and an exact `ghcr.io/...@sha256:...`
+reference. Pin the digest when exact image bytes matter: tags can move, and rerunning
+a build for the same commit can pick up changed base images or system packages.
 
 Check GHCR package visibility after the first publication rather than inferring
 pull access from repository visibility; the workflow does not set visibility. For a
@@ -53,6 +59,9 @@ them in Docker build arguments.
 
 Use an Application with Docker/GHCR as its source and select a published tag or
 digest; no server-side source build is needed. Mount a persistent volume at `/data`.
+Use `:main` to pull the current branch build on deployment, or a commit tag/digest
+to select a particular build. A changed `:main` tag does not update an already
+running container without a pull and redeployment.
 The existing `compose.yaml` is a local-build example, not a registry-only Dokploy
 configuration.
 

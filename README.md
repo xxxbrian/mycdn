@@ -25,8 +25,9 @@ container, join it to the same private network and connect to `mycdn:8080`; then
 configure trusted proxy ranges and client-IP header sources for the actual network.
 
 GitHub Actions publishes tested Linux AMD64/ARM64 images to GHCR using
-`sha-<full-commit>` tags. Registry access, digest pinning and Dokploy configuration
-are described in [deployment](docs/deployment.md#github-actions-and-ghcr).
+the moving `main` branch tag and `sha-<full-commit>` build tags. Registry access,
+digest pinning and Dokploy configuration are described in
+[deployment](docs/deployment.md#github-actions-and-ghcr).
 
 ## Local development
 
