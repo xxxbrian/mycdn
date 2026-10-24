@@ -18,7 +18,42 @@ the file was saved. Ordinary routes, rules and origin choices update live.
 
 The admin listener is separate from the public proxy listener. It serves the
 frontend and the JSON API; the proxy never routes unknown domains to management.
-The operator protects the admin listener with their outer proxy/private network.
+Both listeners accept HTTP only; public TLS terminates at the outer reverse proxy.
+All management operations require a login session. The public proxy is unaffected.
+
+## Authentication
+
+One shared management key is supplied through `MYCDN_ADMIN_KEY`, never through
+the config API, a database, or a command-line argument. It must be 32 to 4096 bytes
+with at least 32 bytes after trimming surrounding whitespace. Use a strong random
+key, not a human password. Startup fails before opening storage when the key is
+missing or invalid. Authentication retains a SHA-256 digest for constant-time key
+comparison; it does not retain the submitted login key in session state.
+
+Login creates/rotates an opaque SCS session. Session tokens are hashed in the
+process-local memory store, expire 12 hours after login, and do not survive a
+restart. Logout revokes the session server-side as well as deleting its cookie.
+Changing the environment key requires a restart, invalidating all old sessions.
+No usernames, roles, registration, password-reset flow, or account records exist.
+
+The fixed HTTP-compatible `mycdn_session` cookie is host-only, `HttpOnly`,
+`SameSite=Strict`, and `Path=/`, without the `Secure` attribute. There is no
+scheme-dependent cookie mode or forwarding-header detection in authentication.
+Public TLS and transport enforcement belong entirely to the outer reverse proxy;
+keep the backend HTTP connection private. Authentication does not encrypt the key
+or session in transit.
+
+The login shell/assets, `/api/auth/login`, `/api/auth/session`, and minimal
+`/healthz` are public. Every other management path, including config reads,
+analytics, OpenAPI, unknown API paths and `/metrics`, rejects missing/expired/
+forged sessions with JSON 401. No wildcard CORS is enabled. Go's cross-origin
+protection rejects unsafe cross-origin browser requests, including login/logout.
+Login requires JSON, has an 8 KiB request limit, and does not echo submitted keys
+in validation errors. An instance-wide token bucket admits 10 login attempts in a
+burst and refills one every five seconds; excess attempts return 429 with
+`Retry-After`. It ignores untrusted forwarding headers and does not throttle
+already-authenticated management operations. Failed-login floods can temporarily
+delay legitimate logins; the key's high entropy remains essential.
 
 ## Cache operations
 

@@ -3,6 +3,8 @@ services:
     build: .
     image: mycdn:local
     restart: unless-stopped
+    environment:
+      MYCDN_ADMIN_KEY: ${MYCDN_ADMIN_KEY:?Set a strong random management key of at least 32 bytes}
     ports:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"

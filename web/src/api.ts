@@ -23,6 +23,14 @@ import type { components } from './generated/api';
 
 type Schema = components['schemas'];
 
+const unauthorizedListeners = new Set<() => void>();
+export function onUnauthorized(listener: () => void) {
+  unauthorizedListeners.add(listener);
+  return () => {
+    unauthorizedListeners.delete(listener);
+  };
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -38,6 +46,8 @@ async function request<T>(
   init: RequestInit = {},
 ): Promise<{ data: T; etag: string }> {
   const response = await fetch(path, {
+    credentials: 'same-origin',
+    cache: 'no-store',
     ...init,
     headers: {
       Accept: 'application/json',
@@ -45,6 +55,9 @@ async function request<T>(
       ...init.headers,
     },
   });
+  if (response.status === 401 && path !== '/api/auth/login' && !init.signal?.aborted) {
+    unauthorizedListeners.forEach((listener) => listener());
+  }
   const text = await response.text();
   let value: unknown;
   try {
@@ -108,6 +121,11 @@ const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
   request<T>(path, { method: 'POST', body: JSON.stringify(body), signal }).then((r) => r.data);
 
 export const api = {
+  session: (signal?: AbortSignal) =>
+    request<Schema['SessionStatus']>('/api/auth/session', { signal }).then((r) => r.data),
+  login: (key: string) =>
+    post<Schema['SessionStatus']>('/api/auth/login', { key } satisfies Schema['LoginCredentials']),
+  logout: () => post<Schema['SessionStatus']>('/api/auth/logout', undefined),
   config: (signal?: AbortSignal) =>
     request<WireConfiguration>('/api/config', { signal }).then((result) => ({
       ...result,

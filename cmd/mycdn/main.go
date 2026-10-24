@@ -67,6 +67,11 @@ func run(ctx context.Context, args []string, stdout io.Writer) (result error) {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	auth, err := admin.NewAuth(os.Getenv("MYCDN_ADMIN_KEY"))
+	if err != nil {
+		return err
+	}
+	defer auth.Close()
 	path, err := filepath.Abs(*configPath)
 	if err != nil {
 		return err
@@ -121,7 +126,7 @@ func run(ctx context.Context, args []string, stdout io.Writer) (result error) {
 		}
 	}
 	proxy = gateway.New(configuration, objects, analyticsObserver(events))
-	management = admin.New(configuration, objects, proxy, events, running)
+	management = admin.New(configuration, objects, proxy, events, running, auth)
 	return serve(ctx, running, proxy, management)
 }
 

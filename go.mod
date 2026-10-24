@@ -3,6 +3,7 @@ module mycdn
 go 1.26.0
 
 require (
+	github.com/alexedwards/scs/v2 v2.9.1-0.20250912101942-bcd691f5afdd
 	github.com/cockroachdb/pebble v1.1.5
 	github.com/danielgtaylor/huma/v2 v2.39.1
 	github.com/duckdb/duckdb-go/v2 v2.10506.0
@@ -10,6 +11,7 @@ require (
 	github.com/quic-go/quic-go v0.63.0
 	golang.org/x/net v0.59.0
 	golang.org/x/sys v0.49.0
+	golang.org/x/time v0.16.0
 )
 
 require (

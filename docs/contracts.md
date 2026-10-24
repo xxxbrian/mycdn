@@ -80,4 +80,18 @@ times. UTC storage, frontend-selected timezone.
 
 Static UI is embedded in `internal/admin/dist` using go:embed. The build copies
 `web/dist` there, so runtime needs no Node process. Proxy and admin listeners are
-separate.
+separate and accept HTTP only. TLS termination and public HTTPS policy belong to
+the outer reverse proxy, not the application.
+
+`admin.NewAuth(key)` validates the environment-supplied key and owns
+memory-only SCS sessions. The composition root passes it to `admin.New` and closes
+it after HTTP handlers drain. No auth fields belong in `config.Document`, cache,
+or analytics. Missing/invalid keys stop the binary before opening storage;
+`-openapi` and `-version` remain offline, key-free operations.
+
+POST `/api/auth/login` exchanges `{key}` for a 12-hour opaque session cookie;
+GET `/api/auth/session` returns `{authenticated}` without requiring a session;
+POST `/api/auth/logout` revokes the current session. Management API routes,
+OpenAPI and `/metrics` require a session. Only the login shell/static assets,
+session check/login, and minimal `/healthz` are public. The proxy listener has no
+management authentication dependency.

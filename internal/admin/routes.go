@@ -104,7 +104,7 @@ func (s *Server) routes(api huma.API) {
 	}, s.status)
 	huma.Register(api, huma.Operation{
 		OperationID: "health", Method: http.MethodGet, Path: "/healthz",
-		Summary: "Check that the management listener is serving requests",
+		Summary: "Check that the management listener is serving requests", Security: []map[string][]string{},
 	}, func(_ context.Context, _ *struct{}) (*struct{ Body healthResult }, error) {
 		return &struct{ Body healthResult }{Body: healthResult{Status: "ok"}}, nil
 	})

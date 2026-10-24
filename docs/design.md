@@ -4,13 +4,16 @@
 
 A small, single-instance, self-hosted caching reverse proxy with visual management,
 graphical rules, and integrated traffic analytics. One Go program, one container,
-local volumes. External Nginx/Caddy handles public TLS and HTTP/3 termination.
+local volumes. Both listeners accept HTTP only; external Dokploy/Nginx/Caddy
+handles public TLS and HTTP/3 termination and forwards HTTP to mycdn.
+Management requires one environment-supplied key, with process-local login sessions.
 No users, tenants, distributed control plane, configuration release workflow, or
 external Redis/database/queue service. One process owns each data directory.
 
 ## Deliberate boundaries
 
-- Public certificates and HTTP/3 termination belong to the outer reverse proxy.
+- TLS listeners, certificates, HTTPS redirects, and HTTP/3 termination belong to
+  the outer reverse proxy, not mycdn. Authentication has no transport-mode setting.
 - One process owns a data directory; there is no multi-node consistency or user system.
 - GeoIP databases are supplied locally by the operator, not bundled.
 - HTTP single ranges are cached; multipart ranges stream through. Arbitrary body

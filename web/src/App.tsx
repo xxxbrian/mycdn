@@ -9,13 +9,15 @@ import {
   Database,
   Globe2,
   Loader2,
+  LogOut,
   Menu,
   Save,
   SearchCode,
   Settings2,
   X,
 } from 'lucide-react';
-import { api } from './api';
+import { api, errorMessage } from './api';
+import { AuthBoundary, useAuth } from './auth';
 import { ConfigProvider, useConfig } from './config';
 import { NavigationProvider, useNavigation } from './lib/navigation';
 import { useAsync } from './lib/useAsync';
@@ -60,10 +62,26 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error?: string 
   }
 }
 function Shell() {
+  const auth = useAuth();
   const { params, update } = useNavigation();
   const config = useConfig();
   const status = useAsync((signal) => api.status(signal), 'shell-status', 30000);
   const [menu, setMenu] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string>();
+  async function logout() {
+    if (config.dirty && !window.confirm('Sign out and discard unsaved configuration changes?'))
+      return;
+    setLoggingOut(true);
+    setLogoutError(undefined);
+    try {
+      await auth.logout();
+    } catch (error) {
+      setLogoutError(errorMessage(error));
+    } finally {
+      setLoggingOut(false);
+    }
+  }
   const page = navigation.some((item) => item.id === params.get('page'))
     ? params.get('page')!
     : 'analytics';
@@ -154,10 +172,14 @@ function Shell() {
         <div>
           <span className="mono muted">{status.data?.version || 'mycdn'}</span>
           <Badge>ADMIN</Badge>
+          <Button onClick={() => void logout()} disabled={loggingOut}>
+            <LogOut size={13} /> {loggingOut ? 'Signing out...' : 'Sign out'}
+          </Button>
         </div>
       </div>
       <ErrorBoundary>
         <main id="main-content" className={`main-content ${editing ? 'with-save-bar' : ''}`}>
+          {logoutError && <Alert>{logoutError}</Alert>}
           {config.notice && <Alert tone="success">{config.notice}</Alert>}
           {status.data?.restart_required && page !== 'settings' && (
             <Alert
@@ -290,10 +312,12 @@ function Shell() {
 }
 export default function App() {
   return (
-    <NavigationProvider>
-      <ConfigProvider>
-        <Shell />
-      </ConfigProvider>
-    </NavigationProvider>
+    <AuthBoundary>
+      <NavigationProvider>
+        <ConfigProvider>
+          <Shell />
+        </ConfigProvider>
+      </NavigationProvider>
+    </AuthBoundary>
   );
 }

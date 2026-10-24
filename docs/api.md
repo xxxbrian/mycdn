@@ -6,6 +6,9 @@ contract to `web/src/generated/` without a running instance.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
+| POST | `/api/auth/login` | Exchange `{key}` for a management session cookie |
+| GET | `/api/auth/session` | Public `{authenticated:boolean}` session check |
+| POST | `/api/auth/logout` | Revoke session and clear cookie |
 | GET | `/api/config` | Full config, with ETag |
 | PUT | `/api/config` | Validate, persist, activate; If-Match required |
 | GET | `/api/capabilities` | Rule stages, fields, operators, typed actions |
@@ -18,6 +21,27 @@ contract to `web/src/generated/` without a running instance.
 | GET | `/api/status` | Live runtime, stores, restart-required settings |
 | GET | `/metrics` | Small low-cardinality Prometheus endpoint |
 | GET | `/healthz` | Listener liveness |
+
+## Authentication
+
+All endpoints except login, session check, and `/healthz` require the management
+session cookie, including OpenAPI and `/metrics`. Missing/expired sessions return
+JSON 401, never an HTML login redirect. Log in with the environment-supplied key
+using `Content-Type: application/json`; there is no username or bearer-key bypass.
+The HTTP-only management listener uses a fixed `mycdn_session` cookie policy,
+independent of forwarding headers. Public TLS termination belongs to the outer
+reverse proxy. Sessions are memory-only and expire after 12 hours or a restart.
+Logout revokes the token, so replaying it returns 401.
+Unsafe cross-origin browser requests are rejected with 403. Login failures are
+redacted; excessive attempts return 429 with `Retry-After`.
+
+Offline `make api-types` needs no key. The optional
+`node scripts/generate-api.mjs <openapi-url>` mode uses `MYCDN_ADMIN_KEY` to obtain
+a temporary session and revokes it after export. It accepts a direct HTTP URL or
+an outer-proxy URL and does not follow redirects carrying credentials.
+
+See [management behavior](management.md#authentication) and
+[deployment](deployment.md#management-key) for key and ingress responsibilities.
 
 ## Configuration
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { api, ApiError } from './api';
+import { api, ApiError, onUnauthorized } from './api';
 import { normalizeConfiguration } from './wire';
 import type { Configuration } from './types';
 import { configurationFixture, runtimeFixture } from './test/fixtures';
@@ -9,6 +9,48 @@ import { queryFromParams } from './lib/analytics';
 afterEach(() => vi.unstubAllGlobals());
 const wireConfig = configurationFixture();
 const config = normalizeConfiguration(wireConfig);
+describe('management authentication boundary', () => {
+  it('sends the key only in the login JSON body with same-origin credentials', async () => {
+    const fetch = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(new Response('{"authenticated":true}')));
+    vi.stubGlobal('fetch', fetch);
+    await api.login('test-management-key-at-least-32-bytes');
+    expect(fetch.mock.calls[0][0]).toBe('/api/auth/login');
+    expect(fetch.mock.calls[0][1]).toMatchObject({
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      body: '{"key":"test-management-key-at-least-32-bytes"}',
+    });
+    await api.session();
+    expect(fetch.mock.calls[1][1].body).toBeUndefined();
+    expect(fetch.mock.calls[1][1].headers).not.toHaveProperty('Authorization');
+  });
+  it('notifies the login gate on expired sessions, but not incorrect login keys', async () => {
+    const expired = vi.fn();
+    const unsubscribe = onUnauthorized(expired);
+    try {
+      vi.stubGlobal(
+        'fetch',
+        vi
+          .fn()
+          .mockImplementation(() =>
+            Promise.resolve(new Response('{"detail":"login required"}', { status: 401 })),
+          ),
+      );
+      await expect(api.login('wrong')).rejects.toMatchObject({ status: 401 });
+      expect(expired).not.toHaveBeenCalled();
+      await expect(api.status()).rejects.toMatchObject({ status: 401 });
+      expect(expired).toHaveBeenCalledOnce();
+      unsubscribe();
+      await expect(api.status()).rejects.toMatchObject({ status: 401 });
+      expect(expired).toHaveBeenCalledOnce();
+    } finally {
+      unsubscribe();
+    }
+  });
+});
 describe('whole-document management boundary', () => {
   it('sends exact If-Match and preserves explicit false/zero patches', async () => {
     const value = {

@@ -112,7 +112,10 @@ jobs:
             docker rm --force --volumes mycdn-ci
           }
           trap cleanup EXIT
-          docker run --detach --name mycdn-ci --network host "$image"
+          export MYCDN_ADMIN_KEY="$(openssl rand -hex 32)"
+          echo "::add-mask::$MYCDN_ADMIN_KEY"
+          docker run --detach --name mycdn-ci --network host \
+            --env MYCDN_ADMIN_KEY "$image"
 
           wait_for_admin() {
             for attempt in {1..60}; do

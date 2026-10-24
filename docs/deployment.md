@@ -3,6 +3,7 @@
 ## Container
 
 ```sh
+export MYCDN_ADMIN_KEY="$(openssl rand -hex 32)"
 docker compose up --build -d
 ```
 
@@ -13,6 +14,30 @@ writable by UID 10001. Stop the instance before backing up the data directory.
 
 Only one process may own the directory. Multiple independent instances need
 separate volumes. No external database or queue is needed.
+
+## Management key
+
+Set `MYCDN_ADMIN_KEY` in the runtime environment to a strong random key (for
+example, `openssl rand -hex 32`). The binary refuses to start without a 32-to-4096
+byte key, including at least 32 bytes after trimming surrounding whitespace.
+There is no default key or unauthenticated mode. Keep the real value in deployment
+secrets or a local uncommitted `.env` file; `.env.example` contains no usable key.
+Do not pass it as a Docker build argument, commit it, or put it in `config.json`.
+Reuse the saved value across deployments rather than generating it blindly each
+time. The key and login sessions are not written into `/data` or a database.
+
+Both mycdn listeners accept HTTP only. There is no TLS listener, certificate
+configuration, HTTPS redirect, or transport-mode environment variable. Dokploy,
+Nginx, Caddy, or another outer reverse proxy terminates public TLS and forwards
+HTTP to mycdn. Keep that backend hop private and enforce public transport policy
+at the ingress; management authentication does not encrypt the connection.
+The local Compose example binds both HTTP ports to loopback.
+
+Sign in with the key, without a username. Sessions expire after 12 hours; logout
+revokes one session, and restart/key rotation invalidates all sessions. Health
+checks can still use public `/healthz`. Monitoring clients must obtain a session
+before reading `/metrics` or the management API. `-version` and `-openapi` require
+no key and do not open stores.
 
 ## GitHub Actions and GHCR
 
@@ -66,10 +91,12 @@ The existing `compose.yaml` is a local-build example, not a registry-only Dokplo
 configuration.
 
 Route business domains through Dokploy's Traefik to container port `8080`, preserving
-the original Host. Add the same domains to sites in mycdn. Route a separately
-authenticated management entry point to port `8081`, or keep it private: the console
-has no login system. Direct public host-port bindings are unnecessary. Configure
-trusted proxy networks and client-IP headers for the actual ingress network.
+the original Host. Add the same domains to sites in mycdn. Route a separate
+management entry point to port `8081`; enable public HTTPS in Dokploy, not mycdn.
+Set the runtime management key in Dokploy's environment settings. The built-in
+key login protects management without a Traefik authentication middleware.
+Direct public host-port bindings are unnecessary. Configure trusted proxy networks
+and client-IP headers for the actual ingress network.
 
 Run one replica, use stop-first updates and allow at least 30 seconds for graceful
 shutdown. Never overlap old and new containers against the same `/data`, including
@@ -79,9 +106,11 @@ before changes requiring a recoverable data snapshot.
 
 ## Outer reverse proxy
 
-Public Nginx/Caddy handles certificates and public H1/H2/H3. It forwards to the
-mycdn proxy listener over HTTP/1.1 or h2c. Keep caching off there, preserve Host,
-and allow streaming. Point a separately protected management route at port 8081.
+Public Dokploy/Nginx/Caddy handles certificates and public H1/H2/H3. It forwards
+HTTP/1.1 or h2c to the mycdn proxy listener, and HTTP/1.1 to management. Neither
+mycdn listener accepts TLS. Keep caching off at the outer proxy, preserve Host,
+and allow streaming. Terminate a separate public HTTPS management route there
+and forward HTTP to port 8081.
 
 Example Caddy routing when both services share a private Docker network:
 
@@ -91,7 +120,6 @@ assets.example.com, downloads.example.com {
 }
 
 cdn-admin.example.com {
-    # Protect this route using your existing access/authentication setup.
     reverse_proxy mycdn:8081
 }
 ```
@@ -132,6 +160,10 @@ With the program running locally:
 ```sh
 python3 scripts/smoke.py
 ```
+
+Give the smoke script the running instance's `MYCDN_ADMIN_KEY` in its environment.
+It checks anonymous rejection, signs in using a separate admin cookie jar, and
+never forwards that cookie to the public proxy. It logs out after cleanup.
 
 For a Docker instance on Docker Desktop/OrbStack:
 

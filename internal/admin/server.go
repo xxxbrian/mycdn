@@ -4,7 +4,6 @@ package admin
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -40,7 +39,7 @@ type Server struct {
 	closeOnce sync.Once
 }
 
-func New(configuration *config.Store, objects *cache.Store, proxy *gateway.Gateway, events *analytics.Store, options Options) *Server {
+func New(configuration *config.Store, objects *cache.Store, proxy *gateway.Gateway, events *analytics.Store, options Options, auth *Auth) *Server {
 	startup := configuration.Get().Document()
 	if options.Version == "" {
 		options.Version = "dev"
@@ -61,6 +60,7 @@ func New(configuration *config.Store, objects *cache.Store, proxy *gateway.Gatew
 	mux := http.NewServeMux()
 	api := newAPI(mux)
 	s.routes(api)
+	auth.routes(api)
 	mux.Handle("GET /metrics", metrics(objects))
 	mux.HandleFunc("/api", apiNotFound)
 	mux.HandleFunc("/api/", apiNotFound)
@@ -73,7 +73,7 @@ func New(configuration *config.Store, objects *cache.Store, proxy *gateway.Gatew
 		}
 		static.ServeHTTP(w, r)
 	})
-	s.handler = sameOrigin(mux)
+	s.handler = sameOrigin(auth.protect(mux))
 	return s
 }
 
@@ -93,31 +93,24 @@ func (s *Server) Close() error {
 func OpenAPI() *huma.OpenAPI {
 	api := newAPI(http.NewServeMux())
 	(&Server{}).routes(api)
+	(&Auth{}).routes(api)
 	return api.OpenAPI()
 }
 
 func sameOrigin(next http.Handler) http.Handler {
+	csrf := http.NewCrossOriginProtection()
+	csrf.SetDenyHandler(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		writeProblem(w, http.StatusForbidden, "cross-origin management writes are not allowed")
+	}))
+	protected := csrf.Handler(next)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-		if strings.HasPrefix(r.URL.Path, "/api/") || r.URL.Path == "/api" {
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("Referrer-Policy", "no-referrer")
+		if strings.HasPrefix(r.URL.Path, "/api/") || r.URL.Path == "/api" || r.URL.Path == "/metrics" {
 			w.Header().Set("Cache-Control", "no-store")
 		}
-		if r.Method != http.MethodGet && r.Method != http.MethodHead && r.Method != http.MethodOptions {
-			origin := r.Header.Get("Origin")
-			if origin != "" {
-				u, err := url.Parse(origin)
-				// Compare browser authorities (including ports), not forwarding
-				// headers. The outer TLS proxy can legitimately change the scheme.
-				if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.User != nil || u.Host == "" || !strings.EqualFold(u.Host, r.Host) || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
-					writeProblem(w, http.StatusForbidden, "cross-origin management writes are not allowed")
-					return
-				}
-			} else if r.Header.Get("Sec-Fetch-Site") == "cross-site" {
-				writeProblem(w, http.StatusForbidden, "cross-origin management writes are not allowed")
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
+		protected.ServeHTTP(w, r)
 	})
 }
 

@@ -9,9 +9,11 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -23,6 +25,7 @@ import (
 )
 
 func TestOpenAPIDoesNotCreateConfigOrOpenStores(t *testing.T) {
+	t.Setenv("MYCDN_ADMIN_KEY", "")
 	dir := t.TempDir()
 	path := filepath.Join(dir, "must-not-exist", "config.json")
 	var output bytes.Buffer
@@ -39,6 +42,23 @@ func TestOpenAPIDoesNotCreateConfigOrOpenStores(t *testing.T) {
 	entries, err := os.ReadDir(dir)
 	if err != nil || len(entries) != 0 {
 		t.Fatalf("--openapi touched storage: %v %v", entries, err)
+	}
+}
+
+func TestInvalidAuthenticationEnvironmentDoesNotTouchStorage(t *testing.T) {
+	for _, key := range []string{"", "short", strings.Repeat(" ", 32), strings.Repeat("a", 4097)} {
+		t.Run(fmt.Sprintf("length-%d", len(key)), func(t *testing.T) {
+			t.Setenv("MYCDN_ADMIN_KEY", key)
+			dir := t.TempDir()
+			err := run(context.Background(), []string{"-config", filepath.Join(dir, "config.json")}, io.Discard)
+			if err == nil || !strings.Contains(err.Error(), "MYCDN_ADMIN_KEY") {
+				t.Fatalf("invalid authentication settings did not fail closed: %v", err)
+			}
+			entries, err := os.ReadDir(dir)
+			if err != nil || len(entries) != 0 {
+				t.Fatal("invalid authentication settings touched storage")
+			}
+		})
 	}
 }
 
@@ -81,6 +101,8 @@ func TestInitialConfigUsesItsParentAndContainerListener(t *testing.T) {
 }
 
 func TestBootstrapOverridesH2CAndGracefulDrain(t *testing.T) {
+	const adminKey = "test-management-key-at-least-32-bytes"
+	t.Setenv("MYCDN_ADMIN_KEY", adminKey)
 	dir := t.TempDir()
 	path := filepath.Join(dir, "config", "config.json")
 	data := filepath.Join(dir, "runtime")
@@ -130,7 +152,8 @@ func TestBootstrapOverridesH2CAndGracefulDrain(t *testing.T) {
 		done <- run(ctx, []string{"-config", path, "-proxy", proxyAddress, "-admin", adminAddress, "-data", data}, io.Discard)
 	}()
 	t.Cleanup(func() { cancel(); finish() })
-	client := &http.Client{Timeout: 5 * time.Second}
+	jar, _ := cookiejar.New(nil)
+	client := &http.Client{Timeout: 5 * time.Second, Jar: jar}
 	defer client.CloseIdleConnections()
 	deadline := time.Now().Add(10 * time.Second)
 	for {
@@ -151,7 +174,30 @@ func TestBootstrapOverridesH2CAndGracefulDrain(t *testing.T) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
+	for _, address := range []string{proxyAddress, adminAddress} {
+		connection, err := tls.DialWithDialer(&net.Dialer{Timeout: time.Second}, "tcp", address, &tls.Config{InsecureSkipVerify: true})
+		if err == nil {
+			connection.Close()
+			t.Fatalf("listener %s accepted TLS instead of HTTP only", address)
+		}
+	}
 	response, err := client.Get("http://" + adminAddress + "/api/status")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != http.StatusUnauthorized {
+		t.Fatal("binary exposed management without a session")
+	}
+	response, err = client.Post("http://"+adminAddress+"/api/auth/login", "application/json", strings.NewReader(`{"key":"`+adminKey+`"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		t.Fatal("binary did not accept environment-supplied management key")
+	}
+	response, err = client.Get("http://" + adminAddress + "/api/status")
 	if err != nil {
 		t.Fatal(err)
 	}

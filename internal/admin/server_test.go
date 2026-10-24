@@ -25,11 +25,15 @@ import (
 )
 
 type fixture struct {
-	server *Server
-	config *config.Store
-	cache  *cache.Store
-	path   string
+	server     *Server
+	authorized http.Handler
+	auth       *Auth
+	config     *config.Store
+	cache      *cache.Store
+	path       string
 }
+
+const testAdminKey = "test-management-key-at-least-32-bytes"
 
 func setup(t *testing.T, enabled bool) fixture {
 	t.Helper()
@@ -59,7 +63,11 @@ func setup(t *testing.T, enabled bool) fixture {
 		}
 	}
 	proxy := gateway.New(configuration, objects, nil)
-	management := New(configuration, objects, proxy, events, Options{Version: "test"})
+	auth, err := NewAuth(testAdminKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	management := New(configuration, objects, proxy, events, Options{Version: "test"}, auth)
 	t.Cleanup(func() {
 		for _, close := range []func() error{management.Close, objects.Close, proxy.Close} {
 			if err := close(); err != nil {
@@ -71,8 +79,16 @@ func setup(t *testing.T, enabled bool) fixture {
 				t.Error(err)
 			}
 		}
+		auth.Close()
 	})
-	return fixture{server: management, config: configuration, cache: objects, path: path}
+	login := request(t, management, "POST", "/api/auth/login", loginCredentials{Key: testAdminKey}, nil)
+	expectStatus(t, login, http.StatusOK)
+	cookie := login.Result().Cookies()[0]
+	authorized := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.AddCookie(cookie)
+		management.ServeHTTP(w, r)
+	})
+	return fixture{server: management, authorized: authorized, auth: auth, config: configuration, cache: objects, path: path}
 }
 
 func request(t *testing.T, handler http.Handler, method, path string, body any, headers map[string]string) *httptest.ResponseRecorder {
@@ -119,7 +135,7 @@ func expectStatus(t *testing.T, response *httptest.ResponseRecorder, status int)
 
 func TestConfigETagAtomicSaveAndRestartState(t *testing.T) {
 	f := setup(t, false)
-	get := request(t, f.server, "GET", "/api/config", nil, nil)
+	get := request(t, f.authorized, "GET", "/api/config", nil, nil)
 	expectStatus(t, get, 200)
 	etag := get.Header().Get("ETag")
 	if !strings.HasPrefix(etag, `"`) || strings.Contains(get.Body.String(), "$schema") {
@@ -127,14 +143,14 @@ func TestConfigETagAtomicSaveAndRestartState(t *testing.T) {
 	}
 	document := decode[config.Document](t, get)
 	document.Sites[0].Name = "First editor"
-	put := request(t, f.server, "PUT", "/api/config", document, map[string]string{"If-Match": etag})
+	put := request(t, f.authorized, "PUT", "/api/config", document, map[string]string{"If-Match": etag})
 	expectStatus(t, put, 200)
 	if put.Header().Get("ETag") == etag {
 		t.Fatal("successful edit did not change the ETag")
 	}
-	expectStatus(t, request(t, f.server, "PUT", "/api/config", document, map[string]string{"If-Match": etag}), 412)
-	expectStatus(t, request(t, f.server, "PUT", "/api/config", document, nil), 422)
-	expectStatus(t, request(t, f.server, "PUT", "/api/config", document, map[string]string{"If-Match": "*"}), 412)
+	expectStatus(t, request(t, f.authorized, "PUT", "/api/config", document, map[string]string{"If-Match": etag}), 412)
+	expectStatus(t, request(t, f.authorized, "PUT", "/api/config", document, nil), 422)
+	expectStatus(t, request(t, f.authorized, "PUT", "/api/config", document, map[string]string{"If-Match": "*"}), 412)
 	file, err := os.Open(f.path)
 	if err != nil {
 		t.Fatal(err)
@@ -144,7 +160,7 @@ func TestConfigETagAtomicSaveAndRestartState(t *testing.T) {
 	if err != nil || persisted.Sites[0].Name != "First editor" {
 		t.Fatalf("save not persisted: %v, %+v", err, persisted.Sites)
 	}
-	status := decode[RuntimeStatus](t, request(t, f.server, "GET", "/api/status", nil, nil))
+	status := decode[RuntimeStatus](t, request(t, f.authorized, "GET", "/api/status", nil, nil))
 	if status.RestartRequired || status.Version != "test" || status.GoVersion == "" || status.MemoryBytes == 0 || len(status.History) == 0 {
 		t.Fatalf("unexpected running status: %+v", status)
 	}
@@ -152,9 +168,9 @@ func TestConfigETagAtomicSaveAndRestartState(t *testing.T) {
 	document.DataDir = filepath.Join(document.DataDir, "other")
 	document.Storage.MaxFills++
 	document.Analytics.Enabled = true
-	put = request(t, f.server, "PUT", "/api/config", document, map[string]string{"If-Match": put.Header().Get("ETag")})
+	put = request(t, f.authorized, "PUT", "/api/config", document, map[string]string{"If-Match": put.Header().Get("ETag")})
 	expectStatus(t, put, 200)
-	status = decode[RuntimeStatus](t, request(t, f.server, "GET", "/api/status", nil, nil))
+	status = decode[RuntimeStatus](t, request(t, f.authorized, "GET", "/api/status", nil, nil))
 	if !status.RestartRequired || !slices.Equal(status.RestartFields, []string{"listen.admin", "data_dir", "storage", "analytics"}) {
 		t.Fatalf("missing restart-required fields: %+v", status)
 	}
@@ -165,7 +181,7 @@ func TestConfigETagAtomicSaveAndRestartState(t *testing.T) {
 
 func TestConfigConcurrentEditorsHaveOneWinner(t *testing.T) {
 	f := setup(t, false)
-	get := request(t, f.server, "GET", "/api/config", nil, nil)
+	get := request(t, f.authorized, "GET", "/api/config", nil, nil)
 	document := decode[config.Document](t, get)
 	etag := get.Header().Get("ETag")
 	results := make(chan int, 2)
@@ -174,7 +190,7 @@ func TestConfigConcurrentEditorsHaveOneWinner(t *testing.T) {
 		editors.Go(func() {
 			copy := document
 			copy.DataDir = name
-			results <- request(t, f.server, "PUT", "/api/config", copy, map[string]string{"If-Match": etag}).Code
+			results <- request(t, f.authorized, "PUT", "/api/config", copy, map[string]string{"If-Match": etag}).Code
 		})
 	}
 	editors.Wait()
@@ -191,11 +207,11 @@ func TestConfigConcurrentEditorsHaveOneWinner(t *testing.T) {
 
 func TestTypedConfigValidationAndRecursiveRules(t *testing.T) {
 	f := setup(t, false)
-	get := request(t, f.server, "GET", "/api/config", nil, nil)
+	get := request(t, f.authorized, "GET", "/api/config", nil, nil)
 	document := decode[config.Document](t, get)
 	headers := map[string]string{"If-Match": get.Header().Get("ETag")}
 	document.Sites[0].DefaultOrigin = "missing"
-	bad := request(t, f.server, "PUT", "/api/config", document, headers)
+	bad := request(t, f.authorized, "PUT", "/api/config", document, headers)
 	expectStatus(t, bad, 422)
 	problem := decode[huma.ErrorModel](t, bad)
 	if len(problem.Errors) != 1 || problem.Errors[0].Location != "sites[0].default_origin" {
@@ -206,22 +222,22 @@ func TestTypedConfigValidationAndRecursiveRules(t *testing.T) {
 		{ID: "conditional", Condition: &rules.Condition{Type: "all", Children: []rules.Condition{{Type: "not", Children: []rules.Condition{{Type: "match", Field: "path", Op: "eq", Values: []string{"/no"}}}}}}, Steps: []rules.Step{{ID: "nested", Type: "if", Branches: []rules.Branch{{ID: "yes", Condition: &rules.Condition{Type: "all"}, Steps: []rules.Step{{ID: "action", Type: "action", Action: &rules.Action{Type: "response_header", Header: &rules.HeaderMutation{Operation: "set", Name: "X-Rule", Value: "nested"}}}}}}}}},
 		{ID: "else", Condition: nil, Steps: []rules.Step{}},
 	}}}}}
-	put := request(t, f.server, "PUT", "/api/config", document, headers)
+	put := request(t, f.authorized, "PUT", "/api/config", document, headers)
 	expectStatus(t, put, 200)
 	var unknown map[string]any
 	encoded, _ := json.Marshal(document)
 	_ = json.Unmarshal(encoded, &unknown)
 	unknown["unknown"] = true
-	expectStatus(t, request(t, f.server, "PUT", "/api/config", unknown, map[string]string{"If-Match": put.Header().Get("ETag")}), 422)
+	expectStatus(t, request(t, f.authorized, "PUT", "/api/config", unknown, map[string]string{"If-Match": put.Header().Get("ETag")}), 422)
 	input := gateway.ExplainInput{URL: "http://cdn.example/yes", Method: "GET", Peer: "127.0.0.1:1000"}
-	explained := request(t, f.server, "POST", "/api/explain", input, nil)
+	explained := request(t, f.authorized, "POST", "/api/explain", input, nil)
 	expectStatus(t, explained, 200)
 	result := decode[gateway.ExplainResult](t, explained)
 	if result.SiteID != "site-a" || result.CacheKey == "" || result.ResponseHeaders.Get("X-Rule") != "nested" {
 		t.Fatalf("explain did not use the saved executor: %+v", result)
 	}
 	input.URL = "http://unknown.example/"
-	expectStatus(t, request(t, f.server, "POST", "/api/explain", input, nil), 400)
+	expectStatus(t, request(t, f.authorized, "POST", "/api/explain", input, nil), 400)
 }
 
 func putEntry(t *testing.T, store *cache.Store, key, site, host, path string) {
@@ -248,71 +264,71 @@ func TestCacheScopeSafetyListingAndJSONBoundary(t *testing.T) {
 	putEntry(t, f.cache, "a", "site-a", "cdn.example", "/a")
 	putEntry(t, f.cache, "b", "site-b", "other.example", "/b")
 	for _, selection := range []any{map[string]any{}, map[string]any{"key": "a"}, map[string]any{"host": " "}, map[string]any{"all": false}} {
-		expectStatus(t, request(t, f.server, "POST", "/api/cache/purge", selection, nil), 422)
+		expectStatus(t, request(t, f.authorized, "POST", "/api/cache/purge", selection, nil), 422)
 	}
-	all := request(t, f.server, "GET", "/api/cache/entries?limit=1", nil, nil)
+	all := request(t, f.authorized, "GET", "/api/cache/entries?limit=1", nil, nil)
 	expectStatus(t, all, 200)
 	listing := decode[entriesResult](t, all)
 	if len(listing.Entries) != 1 || !listing.Truncated || listing.Limit != 1 {
 		t.Fatalf("listing envelope incorrect: %+v", listing)
 	}
 	for _, query := range []string{"limit=501", "limit=0", "limit=bad", "key=a"} {
-		expectStatus(t, request(t, f.server, "GET", "/api/cache/entries?"+query, nil, nil), 422)
+		expectStatus(t, request(t, f.authorized, "GET", "/api/cache/entries?"+query, nil, nil), 422)
 	}
-	scoped := request(t, f.server, "GET", "/api/cache/entries?site_id=site-b&path_prefix=/b", nil, nil)
+	scoped := request(t, f.authorized, "GET", "/api/cache/entries?site_id=site-b&path_prefix=/b", nil, nil)
 	expectStatus(t, scoped, 200)
 	listing = decode[entriesResult](t, scoped)
 	if len(listing.Entries) != 1 || listing.Entries[0].Key != "b" || listing.Truncated {
 		t.Fatalf("filters did not intersect: %+v", listing)
 	}
-	purged := request(t, f.server, "POST", "/api/cache/purge", purgeSelection{SiteID: "site-a", Host: "other.example"}, nil)
+	purged := request(t, f.authorized, "POST", "/api/cache/purge", purgeSelection{SiteID: "site-a", Host: "other.example"}, nil)
 	expectStatus(t, purged, 200)
 	if decode[purgeResult](t, purged).Purged != 0 {
 		t.Fatal("conflicting selection broadened the purge")
 	}
-	purged = request(t, f.server, "POST", "/api/cache/purge", purgeSelection{SiteID: "site-a", Host: "cdn.example", Path: "/a"}, nil)
+	purged = request(t, f.authorized, "POST", "/api/cache/purge", purgeSelection{SiteID: "site-a", Host: "cdn.example", Path: "/a"}, nil)
 	expectStatus(t, purged, 200)
 	if decode[purgeResult](t, purged).Purged != 1 {
 		t.Fatal("exact selected entry not purged")
 	}
-	remaining := decode[entriesResult](t, request(t, f.server, "GET", "/api/cache/entries", nil, nil))
+	remaining := decode[entriesResult](t, request(t, f.authorized, "GET", "/api/cache/entries", nil, nil))
 	if len(remaining.Entries) != 1 || remaining.Entries[0].SiteID != "site-b" {
 		t.Fatal("entry outside purge scope was changed")
 	}
-	failedRefresh := request(t, f.server, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://cdn.example/a"}}, nil)
+	failedRefresh := request(t, f.authorized, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://cdn.example/a"}}, nil)
 	expectStatus(t, failedRefresh, 200)
 	refresh := decode[refreshBatch](t, failedRefresh)
 	if len(refresh.Results) != 1 || refresh.Results[0].Status != "error" {
 		t.Fatalf("unreachable origin reported as refreshed: %+v", refresh)
 	}
-	expectStatus(t, request(t, f.server, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://unknown.example/a"}}, nil), 422)
-	expectStatus(t, request(t, f.server, "POST", "/api/cache/refresh", map[string]any{"key": "b"}, nil), 422)
+	expectStatus(t, request(t, f.authorized, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://unknown.example/a"}}, nil), 422)
+	expectStatus(t, request(t, f.authorized, "POST", "/api/cache/refresh", map[string]any{"key": "b"}, nil), 422)
 	for _, path := range []string{"/api", "/api/no-such-route", "/api/cache/purge/not-a-route"} {
-		expectStatus(t, request(t, f.server, "GET", path, nil, nil), 404)
+		expectStatus(t, request(t, f.authorized, "GET", path, nil, nil), 404)
 	}
-	blocked := request(t, f.server, "POST", "/api/cache/purge", purgeSelection{All: true}, map[string]string{"Origin": "https://evil.example"})
+	blocked := request(t, f.authorized, "POST", "/api/cache/purge", purgeSelection{All: true}, map[string]string{"Origin": "https://evil.example"})
 	expectStatus(t, blocked, 403)
 	if blocked.Header().Get("Access-Control-Allow-Origin") != "" {
 		t.Fatal("management must not allow wildcard CORS")
 	}
-	expectStatus(t, request(t, f.server, "POST", "/api/cache/purge", purgeSelection{All: true}, map[string]string{"Origin": "http://admin.example:9000"}), 403)
-	purged = request(t, f.server, "POST", "/api/cache/purge", purgeSelection{All: true}, map[string]string{"Origin": "http://admin.example"})
+	expectStatus(t, request(t, f.authorized, "POST", "/api/cache/purge", purgeSelection{All: true}, map[string]string{"Origin": "http://admin.example:9000"}), 403)
+	purged = request(t, f.authorized, "POST", "/api/cache/purge", purgeSelection{All: true}, map[string]string{"Origin": "http://admin.example"})
 	expectStatus(t, purged, 200)
 	if decode[purgeResult](t, purged).Purged != 1 {
 		t.Fatal("explicit all purge failed")
 	}
-	expectStatus(t, request(t, f.server, "GET", "/healthz", nil, nil), 200)
-	capabilities := request(t, f.server, "GET", "/api/capabilities", nil, nil)
+	expectStatus(t, request(t, f.authorized, "GET", "/healthz", nil, nil), 200)
+	capabilities := request(t, f.authorized, "GET", "/api/capabilities", nil, nil)
 	expectStatus(t, capabilities, 200)
 	if len(decode[rules.Catalog](t, capabilities).Actions) == 0 {
 		t.Fatal("real rules catalog not served")
 	}
-	openapi := request(t, f.server, "GET", "/api/openapi.json", nil, nil)
+	openapi := request(t, f.authorized, "GET", "/api/openapi.json", nil, nil)
 	expectStatus(t, openapi, 200)
 	if decode[map[string]any](t, openapi)["openapi"] == nil {
 		t.Fatal("generated OpenAPI not served")
 	}
-	metrics := request(t, f.server, "GET", "/metrics", nil, nil)
+	metrics := request(t, f.authorized, "GET", "/metrics", nil, nil)
 	expectStatus(t, metrics, 200)
 	if !strings.Contains(metrics.Body.String(), "mycdn_cache_entries") {
 		t.Fatal("metrics helper not served")
@@ -324,8 +340,8 @@ func TestAnalyticsDirectTypesDisabledAndValidation(t *testing.T) {
 		t.Run(map[bool]string{false: "disabled", true: "enabled"}[enabled], func(t *testing.T) {
 			f := setup(t, enabled)
 			query := analytics.Query{From: time.Now().Add(-time.Hour).UTC().Truncate(time.Second).Format(time.RFC3339), To: time.Now().UTC().Truncate(time.Second).Format(time.RFC3339), Filters: analytics.Filters{}}
-			response := request(t, f.server, "POST", "/api/analytics/query", query, nil)
-			details := request(t, f.server, "POST", "/api/analytics/details", analytics.DetailsQuery{From: query.From, To: query.To, Filters: query.Filters}, nil)
+			response := request(t, f.authorized, "POST", "/api/analytics/query", query, nil)
+			details := request(t, f.authorized, "POST", "/api/analytics/details", analytics.DetailsQuery{From: query.From, To: query.To, Filters: query.Filters}, nil)
 			if !enabled {
 				expectStatus(t, response, 503)
 				expectStatus(t, details, 503)
@@ -338,7 +354,7 @@ func TestAnalyticsDirectTypesDisabledAndValidation(t *testing.T) {
 				t.Fatalf("unexpected empty store result: %+v", result)
 			}
 			query.IntervalSeconds = 11
-			response = request(t, f.server, "POST", "/api/analytics/query", query, nil)
+			response = request(t, f.authorized, "POST", "/api/analytics/query", query, nil)
 			expectStatus(t, response, 422)
 			problem := decode[huma.ErrorModel](t, response)
 			if len(problem.Errors) == 0 || problem.Errors[0].Location != "interval_seconds" {
@@ -379,7 +395,7 @@ func TestRefreshUsesGatewayAcquisitionAndPublishesNewContent(t *testing.T) {
 	mu.Lock()
 	content = "new content"
 	mu.Unlock()
-	response := request(t, f.server, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://cdn.example/refresh"}, SiteID: "site-a"}, nil)
+	response := request(t, f.authorized, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://cdn.example/refresh"}, SiteID: "site-a"}, nil)
 	expectStatus(t, response, 200)
 	result := decode[refreshBatch](t, response)
 	if len(result.Results) != 1 || result.Results[0].Status != "refreshed" {
@@ -394,7 +410,7 @@ func TestRefreshUsesGatewayAcquisitionAndPublishesNewContent(t *testing.T) {
 	if count != 2 {
 		t.Fatalf("manual refresh should perform one acquisition and leave a HIT, got %d attempts", count)
 	}
-	response = request(t, f.server, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://cdn.example/refresh"}, SiteID: "different-site"}, nil)
+	response = request(t, f.authorized, "POST", "/api/cache/refresh", refreshSelection{URLs: []string{"http://cdn.example/refresh"}, SiteID: "different-site"}, nil)
 	expectStatus(t, response, 422)
 	if got := readProxy(); got != "new content" {
 		t.Fatal("invalid refresh selection invalidated cached content")

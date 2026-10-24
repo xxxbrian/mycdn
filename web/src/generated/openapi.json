@@ -1695,6 +1695,22 @@
         ],
         "type": "object"
       },
+      "LoginCredentials": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "description": "Management key supplied through MYCDN_ADMIN_KEY, never stored in configuration.",
+            "maxLength": 4096,
+            "minLength": 32,
+            "type": "string",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "key"
+        ],
+        "type": "object"
+      },
       "Metrics": {
         "additionalProperties": false,
         "properties": {
@@ -2679,6 +2695,18 @@
         ],
         "type": "object"
       },
+      "SessionStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "authenticated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "authenticated"
+        ],
+        "type": "object"
+      },
       "SimulatedResponse": {
         "additionalProperties": false,
         "properties": {
@@ -3136,6 +3164,14 @@
         ],
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "managementSession": {
+        "description": "Log in with the environment-supplied management key to obtain a process-local session.",
+        "in": "cookie",
+        "name": "mycdn_session",
+        "type": "apiKey"
+      }
     }
   },
   "info": {
@@ -3318,6 +3354,182 @@
           }
         },
         "summary": "Query retained traffic with consistent filters across all sections"
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCredentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStatus"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Request Entity Too Large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unsupported Media Type"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [],
+        "summary": "Exchange the management key for a 12-hour, process-local session"
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStatus"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Revoke the current session and clear its cookie"
+      }
+    },
+    "/api/auth/session": {
+      "get": {
+        "operationId": "get-auth-session",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionStatus"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [],
+        "summary": "Check the current management session without exposing credentials"
       }
     },
     "/api/cache/entries": {
@@ -3865,8 +4077,14 @@
             "description": "Error"
           }
         },
+        "security": [],
         "summary": "Check that the management listener is serving requests"
       }
     }
-  }
+  },
+  "security": [
+    {
+      "managementSession": []
+    }
+  ]
 }

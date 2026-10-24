@@ -4,7 +4,7 @@ Runtime Go dependencies are pinned in `go.mod` / `go.sum`; frontend dependencies
 are pinned in `web/pnpm-lock.yaml`. Their respective licenses continue to apply.
 
 Primary components include Go's HTTP stack (BSD), Pebble (BSD), quic-go (MIT),
-DuckDB and its Go bindings (MIT), Huma (MIT), React (MIT), Vite
+DuckDB and its Go bindings (MIT), Huma (MIT), SCS (MIT), React (MIT), Vite
 (MIT), and Apache ECharts (Apache-2.0). Consult the resolved dependency source
 for the authoritative license and notices of each pinned release.
 

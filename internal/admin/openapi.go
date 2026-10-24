@@ -16,5 +16,9 @@ func newAPI(mux *http.ServeMux) huma.API {
 	// remains available, but schema-link fields are not part of saved config.
 	settings.CreateHooks = nil
 	settings.Transformers = nil
+	settings.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
+		"managementSession": {Type: "apiKey", In: "cookie", Name: sessionCookieName, Description: "Log in with the environment-supplied management key to obtain a process-local session."},
+	}
+	settings.Security = []map[string][]string{{"managementSession": {}}}
 	return humago.New(mux, settings)
 }

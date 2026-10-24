@@ -37,6 +37,29 @@ script. No runtime CDN fonts, tile server, or external JavaScript are needed.
 - Loading, empty, unavailable, partial coverage, validation, transport failures,
   and ETag conflicts are distinct visible states. Routine data caveats are compact
   notes/tooltips, not repeated caution banners.
+- Visible copy stays brief and task-oriented. Implementation details, deployment
+  instructions, and security explanations belong in documentation, not permanent
+  UI descriptions. Show actionable errors when an operation fails.
+
+## Login
+
+The initial view checks `/api/auth/session` before mounting the console or
+requesting configuration/analytics. Anonymous users see one password-style
+management-key field, without username, registration, or account controls.
+The login view contains only the brand, sign-in heading, field label, and submit
+button; it has no slogans, environment-variable hints, or session-policy footer.
+The key is sent only to `/api/auth/login`, then removed from form state. A follow-up
+session check confirms that the browser accepted the cookie before opening the
+console; a rejected cookie produces a sign-in error instead of a login loop.
+No key is stored in localStorage, sessionStorage or a URL.
+
+API requests use same-origin cookie credentials. Any protected-request 401
+unmounts the console/draft and returns to login. Sign out revokes the session;
+unsaved configuration prompts before intentional logout. The address/query
+selection stays in place through login. Network failures checking the session
+show a retry view, not an unlocked console. The login view does not inspect the
+URL scheme or select a transport mode; public TLS belongs to the outer reverse
+proxy. Sessions last 12 hours or until logout/server restart.
 
 ## Pages
 
@@ -215,6 +238,9 @@ Endpoints used:
 
 | Endpoint | Client contract |
 | --- | --- |
+| `GET /api/auth/session` | `{authenticated:boolean}`, no key or token in JSON |
+| `POST /api/auth/login` | `{key:string}` -> session cookie and `{authenticated:true}` |
+| `POST /api/auth/logout` | Revoked session, expired cookie, `{authenticated:false}` |
 | `GET /api/config` | Plain config document + ETag |
 | `PUT /api/config` | Plain whole document, `If-Match`, updated config + ETag |
 | `GET /api/capabilities` | `stages`, typed `fields` and `actions` catalog |

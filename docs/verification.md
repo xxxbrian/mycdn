@@ -18,6 +18,7 @@ Point-in-time results do not live here; see the private working log.
 | Management edits produce actual runtime behavior | Integration | Create a site, save rule, send request, see cache and analytics |
 | UI is usable and square-cornered | UI/integration | Real browser desktop/mobile; edit branch, reorder, filter chart, inspect console |
 | Single-container deployment works | Integration | Docker build, run, manage site, proxy request, restart with same volume |
+| Management is closed without a session | Admin/integration | Anonymous API/metrics rejection, HTTP key login/session/logout, fixed cookie policy regardless of forwarding headers, expiry/logout/restart revocation, cross-site rejection, key-free config/status; public proxy still serves |
 
 Run race detection for shared Go state, `go vet ./...`, the frontend build and a
 small set of benchmarks. Repeat a claim only when its relevant code changes; earlier

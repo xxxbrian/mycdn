@@ -31,3 +31,8 @@ This records choices that might otherwise be lost among the design discussions.
 - **Count what was delivered.** Cache-read progress can run ahead of client writes.
   A frozen body-prefix provenance function is shared by completed counters and
   periodic samples; it avoids extra mutable per-chunk accounting state.
+- **One key, not an account platform.** An environment-supplied random management
+  key is exchanged for an opaque SCS session. Memory-only sessions give real logout
+  revocation without database credentials, JWT signing/refresh machinery, or a
+  mandatory outer authentication service. Restart intentionally revokes them all.
+  The pinned SCS revision includes its upstream memory-store shutdown race fix.
